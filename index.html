@@ -2,8 +2,14 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#121212">
     <title>将棋座標トレーニング - 3日完成版</title>
     <style>
+        :root {
+            --cell: min(50px, calc((100dvw - 24px) / 9));
+        }
+
         body {
             background-color: #121212;
             color: white;
@@ -11,11 +17,12 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100dvh;
             margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
             font-family: "Helvetica Neue", Arial, sans-serif;
             user-select: none;
-            overflow: hidden; /* ひよこがはみ出さないように */
         }
 
         #game-container {
@@ -26,32 +33,31 @@
             z-index: 10;
         }
 
-        /* 先手・後手アイコン */
         .player-icon {
-            font-size: 32px;
-            margin: 5px 0;
+            font-size: clamp(20px, 4dvw, 32px);
+            margin: clamp(2px, 1dvh, 5px) 0;
             color: #aaa;
         }
-        /* 後手を180度回転 */
-        .gote { 
-            transform: rotate(180deg); 
+        .gote {
+            transform: rotate(180deg);
             display: inline-block;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(9, 50px);
-            grid-template-rows: repeat(9, 50px);
+            grid-template-columns: repeat(9, var(--cell));
+            grid-template-rows: repeat(9, var(--cell));
             border: 2px solid #555;
             background-color: #1a1a1a;
         }
 
         .cell {
-            width: 50px;
-            height: 50px;
+            width: var(--cell);
+            height: var(--cell);
             border: 0.5px solid #333;
             box-sizing: border-box;
             cursor: pointer;
+            touch-action: manipulation;
             transition: background-color 0.1s;
         }
 
@@ -59,30 +65,28 @@
         .cell.wrong { background-color: #c62828 !important; }
 
         #question {
-            font-size: 80px;
+            font-size: clamp(40px, 10dvw, 80px);
             font-weight: bold;
-            margin: 10px 0;
-            letter-spacing: 10px;
-            height: 100px;
+            margin: clamp(4px, 1.5dvh, 10px) 0;
+            letter-spacing: clamp(4px, 2dvw, 10px);
             text-shadow: 0 0 10px rgba(255,255,255,0.2);
         }
 
         .stats {
-            font-size: 20px;
+            font-size: clamp(14px, 3dvw, 20px);
             color: #888;
-            margin-bottom: 5px;
+            margin-bottom: clamp(2px, 1dvh, 5px);
         }
 
         #score-count {
-            color: #ffca28; /* ひよこカラー */
+            color: #ffca28;
             font-weight: bold;
-            font-size: 28px;
+            font-size: clamp(18px, 5dvw, 28px);
         }
 
-        /* ひよこエフェクト用のスタイル */
         .chick {
-            position: absolute;
-            font-size: 40px;
+            position: fixed;
+            font-size: clamp(24px, 5dvw, 40px);
             pointer-events: none;
             z-index: 100;
             animation: fly-away 2s forwards;
