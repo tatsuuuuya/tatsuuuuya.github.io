@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>将棋座標トレーニング - 3日完成版</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            user-select: none;
+            overflow: hidden; /* ひよこがはみ出さないように */
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 先手・後手アイコン */
+        .player-icon {
+            font-size: 32px;
+            margin: 5px 0;
+            color: #aaa;
+        }
+        /* 後手を180度回転 */
+        .gote { 
+            transform: rotate(180deg); 
+            display: inline-block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(9, 50px);
+            grid-template-rows: repeat(9, 50px);
+            border: 2px solid #555;
+            background-color: #1a1a1a;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 0.5px solid #333;
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+
+        .cell.correct { background-color: #2e7d32 !important; }
+        .cell.wrong { background-color: #c62828 !important; }
+
+        #question {
+            font-size: 80px;
+            font-weight: bold;
+            margin: 10px 0;
+            letter-spacing: 10px;
+            height: 100px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        .stats {
+            font-size: 20px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        #score-count {
+            color: #ffca28; /* ひよこカラー */
+            font-weight: bold;
+            font-size: 28px;
+        }
+
+        /* ひよこエフェクト用のスタイル */
+        .chick {
+            position: absolute;
+            font-size: 40px;
+            pointer-events: none;
+            z-index: 100;
+            animation: fly-away 2s forwards;
+        }
+
+        @keyframes fly-away {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(2) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="stats">正解数: <span id="score-count">0</span></div>
+    
+    <div class="player-icon gote">☖</div>
+    
+    <div class="grid" id="shogi-grid"></div>
+    
+    <div class="player-icon sente">☗</div>
+
+    <div id="question">--</div>
+</div>
+
+<script>
+    const gridElement = document.getElementById('shogi-grid');
+    const questionElement = document.getElementById('question');
+    const scoreElement = document.getElementById('score-count');
+
+    const kanjiNums = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
+    let targetX, targetY;
+    let score = 0;
+    let isProcessing = false;
+
+    function createGrid() {
+        gridElement.innerHTML = '';
+        for (let y = 1; y <= 9; y++) {
+            for (let x = 9; x >= 1; x--) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.onclick = () => handleCellClick(x, y, cell);
+                gridElement.appendChild(cell);
+            }
+        }
+    }
+
+    function generateNewQuestion() {
+        targetX = Math.floor(Math.random() * 9) + 1;
+        targetY = Math.floor(Math.random() * 9) + 1;
+        questionElement.innerText = `${targetX}${kanjiNums[targetY - 1]}`;
+        isProcessing = false;
+    }
+
+    function triggerChickEffect() {
+        for (let i = 0; i < 30; i++) {
+            const chick = document.createElement('div');
+            chick.className = 'chick';
+            chick.innerText = '🐣';
+            chick.style.left = '50%';
+            chick.style.top = '50%';
+            // ランダムな飛散方向を設定
+            const tx = (Math.random() - 0.5) * 800 + 'px';
+            const ty = (Math.random() - 0.5) * 800 + 'px';
+            chick.style.setProperty('--tx', tx);
+            chick.style.setProperty('--ty', ty);
+            
+            document.body.appendChild(chick);
+            
+            // アニメーション終了後に削除
+            setTimeout(() => chick.remove(), 2000);
+        }
+    }
+
+    function handleCellClick(x, y, element) {
+        if (isProcessing) return;
+
+        if (x === targetX && y === targetY) {
+            isProcessing = true;
+            element.classList.add('correct');
+            score++;
+            scoreElement.innerText = score;
+
+            // 10個ごとにひよこ出現
+            if (score > 0 && score % 10 === 0) {
+                triggerChickEffect();
+            }
+            
+            setTimeout(() => {
+                element.classList.remove('correct');
+                generateNewQuestion();
+            }, 300);
+        } else {
+            isProcessing = true;
+            element.classList.add('wrong');
+            
+            setTimeout(() => {
+                element.classList.remove('wrong');
+                isProcessing = false;
+            }, 300);
+        }
+    }
+
+    createGrid();
+    generateNewQuestion();
+</script>
+
+</body>
+</html>
