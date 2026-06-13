@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "Bash(git *)",
+      "Bash(python3 -m http.server*)"
+    ],
+    "ask": [
+      "Edit"
+    ]
+  }
+}
