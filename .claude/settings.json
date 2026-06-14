@@ -4,10 +4,10 @@
       "Read",
       "Write",
       "Bash(git *)",
-      "Bash(python3 -m http.server*)"
+      "Bash(python3 -m http.server*)",
+      "Edit(index.html)",
+      "Write(index.html)"
     ],
-    "ask": [
-      "Edit"
-    ]
+    "ask": []
   }
 }

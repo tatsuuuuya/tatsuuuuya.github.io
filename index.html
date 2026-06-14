@@ -91,22 +91,56 @@
             font-size: clamp(18px, 5dvw, 28px);
         }
 
-        #mode-btn {
+        .stats {
+            text-align: center;
+        }
+        .mode-btn {
             background: none;
             border: 1px solid #555;
-            color: #aaa;
+            color: #666;
             font-size: clamp(13px, 2.5dvw, 18px);
-            padding: 3px 12px;
+            padding: 4px 12px;
             border-radius: 4px;
             cursor: pointer;
-            margin-bottom: clamp(2px, 1dvh, 5px);
         }
-        #mode-btn:active { background-color: #333; }
+        .mode-btn.active {
+            background-color: #333;
+            border-color: #bbb;
+            color: white;
+        }
 
-        #mode-display {
-            font-size: clamp(13px, 2.5dvw, 17px);
+        #top-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: clamp(2px, 1dvh, 5px);
+            width: calc(var(--cell) * 9);
+        }
+        #top-bar .stats {
+            flex: 1;
+            text-align: center;
+        }
+
+        #ta-area {
+            margin-top: clamp(4px, 1dvh, 8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-height: 48px;
+        }
+        #ta-progress {
+            font-size: clamp(18px, 4dvw, 28px);
             color: #aaa;
-            margin-top: clamp(2px, 0.5dvh, 6px);
+            font-weight: bold;
+        }
+        #ta-result-time {
+            font-size: clamp(22px, 6dvw, 40px);
+            font-weight: bold;
+            color: #ffca28;
+        }
+        #ta-best {
+            font-size: clamp(12px, 2.5dvw, 16px);
+            color: #888;
         }
 
         .chick {
@@ -126,17 +160,20 @@
 <body>
 
 <div id="game-container">
-    <div class="stats">正解数: <span id="score-count">0</span></div>
-    <button id="mode-btn" onclick="toggleMode()">後手</button>
+    <div id="top-bar">
+        <button class="mode-btn" id="mode-toggle" onclick="toggleMode()">先手モード</button>
+        <div class="stats">正解数: <span id="score-count">0</span></div>
+        <button class="mode-btn" id="ta-toggle" onclick="toggleTimeAttack()">タイムアタック</button>
+    </div>
 
-    <div class="player-icon" id="top-icon"><span class="gote">☖</span></div>
+    <div class="player-icon" id="top-icon"><span class="gote">☖</span><span class="player-label gote">後手</span></div>
 
     <div class="grid" id="shogi-grid"></div>
 
     <div class="player-icon" id="bottom-icon">☗ <span class="player-label">先手</span></div>
 
     <div id="question">--</div>
-    <div id="mode-display">先手</div>
+    <div id="ta-area"></div>
 </div>
 
 <script>
@@ -149,6 +186,52 @@
     let score = 0;
     let isProcessing = false;
     let isGote = false;
+
+    let isTimeAttack = false;
+    let taCorrectCount = 0;
+    let taStartTime = null;
+
+    function toggleTimeAttack() {
+        if (isTimeAttack) {
+            cancelTimeAttack();
+        } else {
+            startTimeAttack();
+        }
+    }
+
+    function startTimeAttack() {
+        isTimeAttack = true;
+        taCorrectCount = 0;
+        taStartTime = Date.now();
+        document.getElementById('ta-toggle').textContent = '中止';
+        document.getElementById('ta-area').innerHTML =
+            `<div id="ta-progress">0 / 10</div>`;
+        generateNewQuestion();
+    }
+
+    function cancelTimeAttack() {
+        isTimeAttack = false;
+        document.getElementById('ta-toggle').textContent = 'タイムアタック';
+        document.getElementById('ta-area').innerHTML = '';
+        generateNewQuestion();
+    }
+
+    function finishTimeAttack() {
+        isTimeAttack = false;
+        const elapsed = ((Date.now() - taStartTime) / 1000).toFixed(1);
+        const best = localStorage.getItem('ta-best');
+        const isNew = !best || parseFloat(elapsed) < parseFloat(best);
+        if (isNew) localStorage.setItem('ta-best', elapsed);
+        const bestLabel = isNew
+            ? `<div id="ta-best">🏆 新記録！</div>`
+            : `<div id="ta-best">ベスト: ${best}秒</div>`;
+        document.getElementById('ta-toggle').textContent = 'タイムアタック';
+        triggerChickEffect();
+        questionElement.innerText = '🎉';
+        document.getElementById('ta-area').innerHTML =
+            `<div id="ta-result-time">${elapsed}秒</div>${bestLabel}` +
+            `<button class="mode-btn" style="margin-top:4px" onclick="startTimeAttack()">もう一度</button>`;
+    }
 
     function createGrid() {
         gridElement.innerHTML = '';
@@ -166,11 +249,10 @@
 
     function toggleMode() {
         isGote = !isGote;
-        document.getElementById('mode-btn').textContent = isGote ? '先手' : '後手';
-        document.getElementById('mode-display').textContent = isGote ? '後手' : '先手';
+        document.getElementById('mode-toggle').textContent = isGote ? '後手モード' : '先手モード';
         document.getElementById('top-icon').innerHTML = isGote
-            ? '<span class="gote">☗</span>'
-            : '<span class="gote">☖</span>';
+            ? '<span class="gote">☗</span><span class="player-label gote">先手</span>'
+            : '<span class="gote">☖</span><span class="player-label gote">後手</span>';
         document.getElementById('bottom-icon').innerHTML = isGote
             ? '☖ <span class="player-label">後手</span>'
             : '☗ <span class="player-label">先手</span>';
@@ -210,7 +292,18 @@
             score++;
             scoreElement.innerText = score;
 
-            if (score > 0 && score % 10 === 0) {
+            if (isTimeAttack) {
+                taCorrectCount++;
+                const prog = document.getElementById('ta-progress');
+                if (prog) prog.textContent = `${taCorrectCount} / 10`;
+                if (taCorrectCount >= 10) {
+                    setTimeout(() => {
+                        element.classList.remove('correct');
+                        finishTimeAttack();
+                    }, 300);
+                    return;
+                }
+            } else if (score % 20 === 0) {
                 triggerChickEffect();
             }
 
