@@ -31,9 +31,10 @@ jobs:
         working-directory: castle-practice
       - name: Prepare deployment
         run: |
-          mkdir -p _site
+          mkdir -p _site/castle-practice _site/coordinate-practice
           cp index.html _site/
           cp -r castle-practice/dist/. _site/castle-practice/
+          cp coordinate-practice/index.html _site/coordinate-practice/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
