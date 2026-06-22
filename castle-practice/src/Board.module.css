@@ -1,5 +1,6 @@
 :root {
-  --cell: min(52px, calc((100dvw - 24px) / 9));
+  --cell: min(52px, calc((100vw - 24px) / 9));
+  --cell: min(52px, calc((100vw - 24px) / 9));
 }
 
 .container {
@@ -10,7 +11,7 @@
 }
 
 .label {
-  font-size: clamp(12px, 2.5dvw, 16px);
+  font-size: clamp(12px, 2.5vw, 16px);
   color: #888;
 }
 
@@ -29,7 +30,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(14px, 3dvw, 22px);
+  font-size: clamp(14px, 3vw, 22px);
   cursor: pointer;
   touch-action: manipulation;
   transition: background-color 0.1s;
@@ -61,7 +62,7 @@
   background: none;
   border: 1px solid #555;
   color: #888;
-  font-size: clamp(13px, 2.5dvw, 16px);
+  font-size: clamp(13px, 2.5vw, 16px);
   padding: 6px 20px;
   border-radius: 4px;
   cursor: pointer;
@@ -74,7 +75,7 @@
 
 .status {
   min-height: 1.6em;
-  font-size: clamp(13px, 2.5dvw, 16px);
+  font-size: clamp(13px, 2.5vw, 16px);
   color: #bbb;
   margin-bottom: 4px;
 }
