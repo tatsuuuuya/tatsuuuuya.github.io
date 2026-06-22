@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { Shogi } from 'shogi.js'
+import { isCastleComplete } from './castles'
 import styles from './Board.module.css'
 
 const KIND_KANJI = {
@@ -8,9 +9,6 @@ const KIND_KANJI = {
   TO: 'と', NY: '杏', NK: '圭', NG: '全', UM: '馬', RY: '龍',
 }
 
-// shogi.js: board[x-1][y-1] (0-indexed), API methods use 1-indexed (x=1..9, y=1..9)
-// Screen layout: columns 9→1 left-to-right, rows 1→9 top-to-bottom
-
 function initShogi() {
   const s = new Shogi()
   s.initialize()
@@ -18,13 +16,13 @@ function initShogi() {
   return s
 }
 
-export default function Board() {
+export default function Board({ castle }) {
   const shogiRef = useRef(initShogi())
   const shogi = shogiRef.current
 
   const [selected, setSelected] = useState(null)
   const [legalMoves, setLegalMoves] = useState([])
-  const [, forceUpdate] = useState(0)
+  const [, setTick] = useState(0)
 
   function isLegal(x, y) {
     return legalMoves.some(m => m.to.x === x && m.to.y === y)
@@ -34,7 +32,7 @@ export default function Board() {
     shogiRef.current = initShogi()
     setSelected(null)
     setLegalMoves([])
-    forceUpdate(n => n + 1)
+    setTick(n => n + 1)
   }
 
   function handleClick(x, y) {
@@ -42,7 +40,7 @@ export default function Board() {
       shogi.move(selected.x, selected.y, x, y)
       setSelected(null)
       setLegalMoves([])
-      forceUpdate(n => n + 1)
+      setTick(n => n + 1)
       return
     }
     const piece = shogi.board[x - 1][y - 1]
@@ -55,6 +53,14 @@ export default function Board() {
     }
   }
 
+  const completed = castle ? isCastleComplete(shogi.board, castle) : false
+  const unmet = castle
+    ? castle.requirements.filter(r => {
+        const p = shogi.board[r.x - 1][r.y - 1]
+        return !(p?.kind === r.kind && p?.color === r.color)
+      })
+    : []
+
   const cells = []
   for (let y = 1; y <= 9; y++) {
     for (let xi = 0; xi < 9; xi++) {
@@ -66,11 +72,20 @@ export default function Board() {
 
   return (
     <div className={styles.container}>
+      <div className={styles.status}>
+        {completed
+          ? <span className={styles.completed}>囲い完成！</span>
+          : castle
+            ? <span>残り <strong>{unmet.length}</strong> 駒</span>
+            : null
+        }
+      </div>
       <div className={styles.label}>後手</div>
       <div className={styles.grid}>
         {cells.map(({ x, y, piece }) => {
           const isSelected = selected?.x === x && selected?.y === y
           const isTarget = isLegal(x, y)
+          const isGoal = !completed && unmet.some(r => r.x === x && r.y === y)
           return (
             <div
               key={`${x}-${y}`}
@@ -79,6 +94,7 @@ export default function Board() {
                 piece?.color === 1 ? styles.gote : '',
                 isSelected ? styles.selected : '',
                 isTarget ? styles.target : '',
+                isGoal ? styles.goal : '',
               ].join(' ')}
               onClick={() => handleClick(x, y)}
             >

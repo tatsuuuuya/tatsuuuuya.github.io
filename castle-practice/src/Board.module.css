@@ -71,3 +71,24 @@
   border-color: #aaa;
   color: white;
 }
+
+.status {
+  min-height: 1.6em;
+  font-size: clamp(13px, 2.5dvw, 16px);
+  color: #bbb;
+  margin-bottom: 4px;
+}
+
+.completed {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.computing {
+  color: #888;
+}
+
+.goal {
+  outline: 2px solid #aa8800;
+  outline-offset: -2px;
+}
