@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#121212">
+    <title>将棋座標トレーニング - 3日完成版</title>
+    <style>
+        :root {
+            --cell: min(50px, calc((100dvw - 24px) / 9));
+        }
+
+        body {
+            background-color: #121212;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100dvh;
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            user-select: none;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .player-icon {
+            font-size: clamp(20px, 4dvw, 32px);
+            margin: clamp(2px, 1dvh, 5px) 0;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .player-label {
+            font-size: clamp(11px, 2dvw, 15px);
+            color: #aaa;
+        }
+        .gote {
+            transform: rotate(180deg);
+            display: inline-block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(9, var(--cell));
+            grid-template-rows: repeat(9, var(--cell));
+            border: 2px solid #555;
+            background-color: #1a1a1a;
+        }
+
+        .cell {
+            width: var(--cell);
+            height: var(--cell);
+            border: 0.5px solid #333;
+            box-sizing: border-box;
+            cursor: pointer;
+            touch-action: manipulation;
+            transition: background-color 0.1s;
+        }
+
+        .cell.correct { background-color: #2e7d32 !important; }
+        .cell.wrong { background-color: #c62828 !important; }
+
+        #question {
+            font-size: clamp(40px, 10dvw, 80px);
+            font-weight: bold;
+            margin: clamp(4px, 1.5dvh, 10px) 0;
+            letter-spacing: clamp(4px, 2dvw, 10px);
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        .stats {
+            font-size: clamp(14px, 3dvw, 20px);
+            color: #888;
+            margin-bottom: clamp(2px, 1dvh, 5px);
+        }
+
+        #score-count {
+            color: #ffca28;
+            font-weight: bold;
+            font-size: clamp(18px, 5dvw, 28px);
+        }
+
+        .stats {
+            text-align: center;
+        }
+        .mode-btn {
+            background: none;
+            border: 1px solid #555;
+            color: #666;
+            font-size: clamp(13px, 2.5dvw, 18px);
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .mode-btn.active {
+            background-color: #333;
+            border-color: #bbb;
+            color: white;
+        }
+
+        #top-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: clamp(2px, 1dvh, 5px);
+            width: calc(var(--cell) * 9);
+        }
+        #top-bar .stats {
+            flex: 1;
+            text-align: center;
+        }
+
+        #ta-area {
+            margin-top: clamp(4px, 1dvh, 8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-height: 48px;
+        }
+        #ta-progress {
+            font-size: clamp(18px, 4dvw, 28px);
+            color: #aaa;
+            font-weight: bold;
+        }
+        #ta-result-time {
+            font-size: clamp(22px, 6dvw, 40px);
+            font-weight: bold;
+            color: #ffca28;
+        }
+        #ta-best {
+            font-size: clamp(12px, 2.5dvw, 16px);
+            color: #888;
+        }
+
+        .chick {
+            position: fixed;
+            font-size: clamp(24px, 5dvw, 40px);
+            pointer-events: none;
+            z-index: 100;
+            animation: fly-away 2s forwards;
+        }
+
+        @keyframes fly-away {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(2) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="top-bar">
+        <button class="mode-btn" id="mode-toggle" onclick="toggleMode()">先手モード</button>
+        <div class="stats">正解数: <span id="score-count">0</span></div>
+        <button class="mode-btn" id="ta-toggle" onclick="toggleTimeAttack()">タイムアタック</button>
+    </div>
+
+    <div class="player-icon" id="top-icon"><span class="gote">☖</span><span class="player-label gote">後手</span></div>
+
+    <div class="grid" id="shogi-grid"></div>
+
+    <div class="player-icon" id="bottom-icon">☗ <span class="player-label">先手</span></div>
+
+    <div id="question">--</div>
+    <div id="ta-area"></div>
+</div>
+
+<script>
+    const gridElement = document.getElementById('shogi-grid');
+    const questionElement = document.getElementById('question');
+    const scoreElement = document.getElementById('score-count');
+
+    const kanjiNums = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
+    let targetX, targetY;
+    let score = 0;
+    let isProcessing = false;
+    let isGote = false;
+
+    let isTimeAttack = false;
+    let taCorrectCount = 0;
+    let taStartTime = null;
+
+    function toggleTimeAttack() {
+        if (isTimeAttack) {
+            cancelTimeAttack();
+        } else {
+            startTimeAttack();
+        }
+    }
+
+    function startTimeAttack() {
+        isTimeAttack = true;
+        taCorrectCount = 0;
+        taStartTime = Date.now();
+        document.getElementById('ta-toggle').textContent = '中止';
+        document.getElementById('ta-area').innerHTML =
+            `<div id="ta-progress">0 / 10</div>`;
+        generateNewQuestion();
+    }
+
+    function cancelTimeAttack() {
+        isTimeAttack = false;
+        document.getElementById('ta-toggle').textContent = 'タイムアタック';
+        document.getElementById('ta-area').innerHTML = '';
+        generateNewQuestion();
+    }
+
+    function finishTimeAttack() {
+        isTimeAttack = false;
+        const elapsed = ((Date.now() - taStartTime) / 1000).toFixed(1);
+        const best = localStorage.getItem('ta-best');
+        const isNew = !best || parseFloat(elapsed) < parseFloat(best);
+        if (isNew) localStorage.setItem('ta-best', elapsed);
+        const bestLabel = isNew
+            ? `<div id="ta-best">🏆 新記録！</div>`
+            : `<div id="ta-best">ベスト: ${best}秒</div>`;
+        document.getElementById('ta-toggle').textContent = 'タイムアタック';
+        triggerChickEffect();
+        questionElement.innerText = '🎉';
+        document.getElementById('ta-area').innerHTML =
+            `<div id="ta-result-time">${elapsed}秒</div>${bestLabel}` +
+            `<button class="mode-btn" style="margin-top:4px" onclick="startTimeAttack()">もう一度</button>`;
+    }
+
+    function createGrid() {
+        gridElement.innerHTML = '';
+        const yVals = isGote ? [9,8,7,6,5,4,3,2,1] : [1,2,3,4,5,6,7,8,9];
+        const xVals = isGote ? [1,2,3,4,5,6,7,8,9] : [9,8,7,6,5,4,3,2,1];
+        for (const y of yVals) {
+            for (const x of xVals) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.onclick = () => handleCellClick(x, y, cell);
+                gridElement.appendChild(cell);
+            }
+        }
+    }
+
+    function toggleMode() {
+        isGote = !isGote;
+        document.getElementById('mode-toggle').textContent = isGote ? '後手モード' : '先手モード';
+        document.getElementById('top-icon').innerHTML = isGote
+            ? '<span class="gote">☗</span><span class="player-label gote">先手</span>'
+            : '<span class="gote">☖</span><span class="player-label gote">後手</span>';
+        document.getElementById('bottom-icon').innerHTML = isGote
+            ? '☖ <span class="player-label">後手</span>'
+            : '☗ <span class="player-label">先手</span>';
+        createGrid();
+        generateNewQuestion();
+    }
+
+    function generateNewQuestion() {
+        targetX = Math.floor(Math.random() * 9) + 1;
+        targetY = Math.floor(Math.random() * 9) + 1;
+        questionElement.innerText = `${targetX}${kanjiNums[targetY - 1]}`;
+        isProcessing = false;
+    }
+
+    function triggerChickEffect() {
+        for (let i = 0; i < 30; i++) {
+            const chick = document.createElement('div');
+            chick.className = 'chick';
+            chick.innerText = '🐣';
+            chick.style.left = '50%';
+            chick.style.top = '50%';
+            const tx = (Math.random() - 0.5) * 800 + 'px';
+            const ty = (Math.random() - 0.5) * 800 + 'px';
+            chick.style.setProperty('--tx', tx);
+            chick.style.setProperty('--ty', ty);
+            document.body.appendChild(chick);
+            setTimeout(() => chick.remove(), 2000);
+        }
+    }
+
+    function handleCellClick(x, y, element) {
+        if (isProcessing) return;
+
+        if (x === targetX && y === targetY) {
+            isProcessing = true;
+            element.classList.add('correct');
+            score++;
+            scoreElement.innerText = score;
+
+            if (isTimeAttack) {
+                taCorrectCount++;
+                const prog = document.getElementById('ta-progress');
+                if (prog) prog.textContent = `${taCorrectCount} / 10`;
+                if (taCorrectCount >= 10) {
+                    setTimeout(() => {
+                        element.classList.remove('correct');
+                        finishTimeAttack();
+                    }, 300);
+                    return;
+                }
+            } else if (score % 20 === 0) {
+                triggerChickEffect();
+            }
+
+            setTimeout(() => {
+                element.classList.remove('correct');
+                generateNewQuestion();
+            }, 300);
+        } else {
+            isProcessing = true;
+            element.classList.add('wrong');
+
+            setTimeout(() => {
+                element.classList.remove('wrong');
+                isProcessing = false;
+            }, 300);
+        }
+    }
+
+    createGrid();
+    generateNewQuestion();
+</script>
+
+</body>
+</html>
