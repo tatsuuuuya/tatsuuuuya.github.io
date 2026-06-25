@@ -7,7 +7,7 @@
     <title>将棋座標トレーニング - 3日完成版</title>
     <style>
         :root {
-            --cell: min(50px, calc((100dvw - 24px) / 9));
+            --cell: min(50px, calc((100vw - 24px) / 9));
         }
 
         body {
@@ -17,6 +17,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            min-height: 100vh;
             min-height: 100dvh;
             margin: 0;
             padding: 12px;
@@ -34,15 +35,15 @@
         }
 
         .player-icon {
-            font-size: clamp(20px, 4dvw, 32px);
-            margin: clamp(2px, 1dvh, 5px) 0;
+            font-size: clamp(20px, 4vw, 32px);
+            margin: clamp(2px, 1vh, 5px) 0;
             color: #aaa;
             display: flex;
             align-items: center;
             gap: 6px;
         }
         .player-label {
-            font-size: clamp(11px, 2dvw, 15px);
+            font-size: clamp(11px, 2vw, 15px);
             color: #aaa;
         }
         .gote {
@@ -72,23 +73,23 @@
         .cell.wrong { background-color: #c62828 !important; }
 
         #question {
-            font-size: clamp(40px, 10dvw, 80px);
+            font-size: clamp(40px, 10vw, 80px);
             font-weight: bold;
-            margin: clamp(4px, 1.5dvh, 10px) 0;
-            letter-spacing: clamp(4px, 2dvw, 10px);
+            margin: clamp(4px, 1.5vh, 10px) 0;
+            letter-spacing: clamp(4px, 2vw, 10px);
             text-shadow: 0 0 10px rgba(255,255,255,0.2);
         }
 
         .stats {
-            font-size: clamp(14px, 3dvw, 20px);
+            font-size: clamp(14px, 3vw, 20px);
             color: #888;
-            margin-bottom: clamp(2px, 1dvh, 5px);
+            margin-bottom: clamp(2px, 1vh, 5px);
         }
 
         #score-count {
             color: #ffca28;
             font-weight: bold;
-            font-size: clamp(18px, 5dvw, 28px);
+            font-size: clamp(18px, 5vw, 28px);
         }
 
         .stats {
@@ -98,7 +99,7 @@
             background: none;
             border: 1px solid #555;
             color: #666;
-            font-size: clamp(13px, 2.5dvw, 18px);
+            font-size: clamp(13px, 2.5vw, 18px);
             padding: 4px 12px;
             border-radius: 4px;
             cursor: pointer;
@@ -112,7 +113,7 @@
         #top-bar {
             display: flex;
             align-items: center;
-            margin-bottom: clamp(2px, 1dvh, 5px);
+            margin-bottom: clamp(2px, 1vh, 5px);
             width: calc(var(--cell) * 9);
         }
         #top-bar .stats {
@@ -121,7 +122,7 @@
         }
 
         #ta-area {
-            margin-top: clamp(4px, 1dvh, 8px);
+            margin-top: clamp(4px, 1vh, 8px);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -129,23 +130,23 @@
             min-height: 48px;
         }
         #ta-progress {
-            font-size: clamp(18px, 4dvw, 28px);
+            font-size: clamp(18px, 4vw, 28px);
             color: #aaa;
             font-weight: bold;
         }
         #ta-result-time {
-            font-size: clamp(22px, 6dvw, 40px);
+            font-size: clamp(22px, 6vw, 40px);
             font-weight: bold;
             color: #ffca28;
         }
         #ta-best {
-            font-size: clamp(12px, 2.5dvw, 16px);
+            font-size: clamp(12px, 2.5vw, 16px);
             color: #888;
         }
 
         .chick {
             position: fixed;
-            font-size: clamp(24px, 5dvw, 40px);
+            font-size: clamp(24px, 5vw, 40px);
             pointer-events: none;
             z-index: 100;
             animation: fly-away 2s forwards;

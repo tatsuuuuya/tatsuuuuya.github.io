@@ -1,6 +1,5 @@
 :root {
   --cell: min(52px, calc((100vw - 24px) / 9));
-  --cell: min(52px, calc((100vw - 24px) / 9));
 }
 
 .container {
