@@ -1,0 +1,15 @@
+name: Check Code
+
+on: pull_request
+
+jobs:
+
+  htmllint: # ジョブID 自由に命名できる
+    runs-on: ubuntu-latest # 実行環境
+    steps:
+      - uses: actions/checkout@v4 # @v4はお手軽（だがactions/checkoutチームがメンテしてるメジャーバージョンのタグ&security riskあり）
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24' # 引数node-versionを渡してactionを実行
+      - run: npx htmlhint "**/*.html" # htmlhintでhtmlファイルの構文チェック(ver指定されない・キャッシュされないなどの改良余地あり)
+    # stepsの`-`ごとにnamingすることができる．目的は可読性・保守性．
