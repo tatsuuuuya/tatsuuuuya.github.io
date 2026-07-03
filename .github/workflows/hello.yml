@@ -5,3 +5,11 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - run: echo "CI動いた"
+    # secretを引用する
+    use-secret:
+        runs-on: ubuntu-latest
+        steps:
+          - name: Use secret
+            run: echo "secret is ${{ secrets.MY_SECRET }}"
+            env:
+              TOKEN: ${{ secret.MY_SECRET }}
