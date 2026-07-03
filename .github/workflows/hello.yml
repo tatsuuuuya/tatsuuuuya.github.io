@@ -12,4 +12,4 @@ jobs:
           - name: Use secret
             run: echo "secret is ${{ secrets.MY_SECRET }}"
             env:
-              TOKEN: ${{ secret.MY_SECRET }}
+              TOKEN: ${{ secrets.MY_SECRET }}
