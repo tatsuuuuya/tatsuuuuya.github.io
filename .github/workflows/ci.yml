@@ -1,0 +1,49 @@
+name: CI
+# CIとは、統合前の自動チェック
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+cocurrency: #初出なんだろこれ
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # 囲い練習のCI
+  castle-practice:
+    name: Build & Lint (castle-practice)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: castle-practice
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm #このcacheはどこで使うため??
+          cache-dependency-path: castle-practice/package-lock.json
+      - name: Install dependencies
+        run: nmp ci
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
+  
+  # 座標練習のCI
+  html-validation:
+    name: Validate HTML (root & coordinate-practice)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npx htmlhint "index.html","coordinate-practice/**/*.html"
+
