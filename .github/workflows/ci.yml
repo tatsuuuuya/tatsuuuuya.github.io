@@ -7,7 +7,7 @@ on:
   pull_request:
     branches: [main]
 
-cocurrency: #初出なんだろこれ
+concurrency: #初出なんだろこれ
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -30,7 +30,7 @@ jobs:
           cache: npm #このcacheはどこで使うため??
           cache-dependency-path: castle-practice/package-lock.json
       - name: Install dependencies
-        run: nmp ci
+        run: npm ci
       - name: Lint
         run: npm run lint
       - name: Build
