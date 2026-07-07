@@ -16,13 +16,17 @@ function initShogi() {
   return s
 }
 
+function cloneBoard(board) {
+  return board.map(col => col.slice())
+}
+
 export default function Board({ castle }) {
   const shogiRef = useRef(initShogi())
   const shogi = shogiRef.current
 
+  const [board, setBoard] = useState(() => cloneBoard(initShogi().board))
   const [selected, setSelected] = useState(null)
   const [legalMoves, setLegalMoves] = useState([])
-  const [, setTick] = useState(0)
 
   function isLegal(x, y) {
     return legalMoves.some(m => m.to.x === x && m.to.y === y)
@@ -30,17 +34,17 @@ export default function Board({ castle }) {
 
   function reset() {
     shogiRef.current = initShogi()
+    setBoard(cloneBoard(shogiRef.current.board))
     setSelected(null)
     setLegalMoves([])
-    setTick(n => n + 1)
   }
 
   function handleClick(x, y) {
     if (selected && isLegal(x, y)) {
       shogi.move(selected.x, selected.y, x, y)
+      setBoard(cloneBoard(shogi.board))
       setSelected(null)
       setLegalMoves([])
-      setTick(n => n + 1)
       return
     }
     const piece = shogi.board[x - 1][y - 1]
@@ -53,10 +57,10 @@ export default function Board({ castle }) {
     }
   }
 
-  const completed = castle ? isCastleComplete(shogi.board, castle) : false
+  const completed = castle ? isCastleComplete(board, castle) : false
   const unmet = castle
     ? castle.requirements.filter(r => {
-        const p = shogi.board[r.x - 1][r.y - 1]
+        const p = board[r.x - 1][r.y - 1]
         return !(p?.kind === r.kind && p?.color === r.color)
       })
     : []
@@ -65,7 +69,7 @@ export default function Board({ castle }) {
   for (let y = 1; y <= 9; y++) {
     for (let xi = 0; xi < 9; xi++) {
       const x = 9 - xi
-      const piece = shogi.board[x - 1][y - 1]
+      const piece = board[x - 1][y - 1]
       cells.push({ x, y, piece })
     }
   }
