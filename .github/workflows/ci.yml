@@ -45,5 +45,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: npx htmlhint "index.html","coordinate-practice/**/*.html"
+      - run: npx htmlhint "index.html" "coordinate-practice/**/*.html"
 
