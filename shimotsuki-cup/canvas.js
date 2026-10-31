@@ -89,32 +89,29 @@ function drawTicket(canvas, { userName, date, tournament, ranked }) {
     const leftX0 = contentX0;
     const leftX1 = leftX0 + leftW;
 
+    const rightX0 = leftX1 + contentW * 0.035;
+    const rightX1 = contentX1;
+    const rightW = rightX1 - rightX0;
+
     const titleBoxH = contentH * 0.16;
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const titleFontSize = fitHorizontalFontSize(
+        ctx, 'フォーメーション', rightW * 0.94, titleBoxH * 0.78, 'Noto Sans JP', 900, 90, 20
+    );
 
     let cursorY = contentY0;
 
     ctx.fillStyle = COLOR_INK;
     ctx.fillRect(leftX0, cursorY, leftW, titleBoxH);
     ctx.fillStyle = '#FFFFFF';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
     const tournamentFontSize = fitHorizontalFontSize(
-        ctx, tournament, leftW * 0.86, titleBoxH * 0.65, 'Noto Sans JP', 900, 70, 16
+        ctx, tournament, leftW * 0.86, titleBoxH * 0.78, 'Noto Sans JP', 900, titleFontSize, 16
     );
     ctx.font = `900 ${tournamentFontSize}px "Noto Sans JP"`;
     ctx.fillText(tournament, leftX0 + leftW / 2, cursorY + titleBoxH / 2 + 2);
     cursorY += titleBoxH + contentH * 0.02;
-
-    const userNameH = contentH * 0.14;
-    ctx.fillStyle = COLOR_INK;
-    ctx.fillRect(leftX0, cursorY, leftW, userNameH);
-    ctx.fillStyle = '#FFFFFF';
-    const userNameFontSize = fitHorizontalFontSize(
-        ctx, userName, leftW * 0.88, userNameH * 0.82, 'Noto Sans JP', 900, 160, 20
-    );
-    ctx.font = `900 ${userNameFontSize}px "Noto Sans JP"`;
-    ctx.fillText(userName, leftX0 + leftW / 2, cursorY + userNameH / 2 + 2);
-    cursorY += userNameH + contentH * 0.015;
 
     const dateH = contentH * 0.1;
     ctx.fillStyle = COLOR_INK;
@@ -148,19 +145,12 @@ function drawTicket(canvas, { userName, date, tournament, ranked }) {
     ctx.fillStyle = COLOR_INK;
     ctx.fillRect(leftX0, cursorY, leftW, footerH);
 
-    const rightX0 = leftX1 + contentW * 0.035;
-    const rightX1 = contentX1;
-    const rightW = rightX1 - rightX0;
-
     ctx.strokeStyle = COLOR_INK;
     ctx.lineWidth = 3;
     ctx.strokeRect(rightX0, contentY0, rightW, titleBoxH);
     ctx.fillStyle = COLOR_INK;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    const titleFontSize = fitHorizontalFontSize(
-        ctx, 'フォーメーション', rightW * 0.94, titleBoxH * 0.78, 'Noto Sans JP', 900, 90, 20
-    );
     ctx.font = `900 ${titleFontSize}px "Noto Sans JP"`;
     ctx.fillText('フォーメーション', rightX0 + rightW / 2, contentY0 + titleBoxH / 2 + 2);
 
