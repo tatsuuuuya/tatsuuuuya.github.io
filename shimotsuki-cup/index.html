@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#121212">
+    <title>霜月杯 出棋</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&family=Noto+Serif+JP:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<section id="screen-auth" class="screen active">
+    <div class="gate-card">
+        <h1 class="gate-title">霜月杯 出棋</h1>
+        <p class="gate-sub">入場ゲート</p>
+        <input type="password" id="password-input" placeholder="合言葉" autocomplete="off">
+        <button id="enter-btn" class="primary-btn">入場する</button>
+        <p id="auth-error" class="error-text"></p>
+    </div>
+</section>
+
+<section id="screen-form" class="screen">
+    <h1>霜月杯 順位予想</h1>
+    <div class="form-card">
+        <label class="field">
+            予想者名
+            <input type="text" id="predictor-name" placeholder="あなたの名前" autocomplete="off">
+        </label>
+
+        <div class="rank-selects">
+            <label class="field">1位<select id="rank-1"></select></label>
+            <label class="field">2位<select id="rank-2"></select></label>
+            <label class="field">3位<select id="rank-3"></select></label>
+            <label class="field">4位<select id="rank-4"></select></label>
+        </div>
+
+        <p id="form-error" class="error-text"></p>
+        <button id="submit-btn" class="primary-btn">予想する</button>
+    </div>
+</section>
+
+<section id="screen-result" class="screen">
+    <h1>投票券</h1>
+    <div class="canvas-wrap">
+        <canvas id="ticket-canvas"></canvas>
+    </div>
+    <div class="result-actions">
+        <button id="download-btn" class="primary-btn">画像をダウンロード</button>
+        <button id="retry-btn" class="ghost-btn">もう一度予想する</button>
+    </div>
+</section>
+
+<script src="auth.js"></script>
+<script src="canvas.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

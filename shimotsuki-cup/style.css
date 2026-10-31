@@ -1,0 +1,157 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #121212;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0;
+    padding: 24px 16px;
+    font-family: "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+}
+
+h1 {
+    font-size: clamp(22px, 5vw, 32px);
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    margin: 0 0 24px;
+    text-align: center;
+}
+
+.screen {
+    display: none;
+    width: 100%;
+    max-width: 640px;
+    flex-direction: column;
+    align-items: center;
+}
+
+.screen.active {
+    display: flex;
+}
+
+.gate-card,
+.form-card {
+    width: 100%;
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+}
+
+.gate-title {
+    margin-bottom: 0;
+}
+
+.gate-sub {
+    text-align: center;
+    color: #888;
+    margin: 0;
+    font-size: 14px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+    color: #aaa;
+}
+
+input,
+select {
+    background-color: #0d0d0d;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: white;
+    padding: 10px 12px;
+    font-size: 16px;
+    font-family: inherit;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #888;
+}
+
+.rank-selects {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.primary-btn,
+.ghost-btn {
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.primary-btn {
+    background-color: #e0c060;
+    border: none;
+    color: #121212;
+}
+
+.primary-btn:hover {
+    background-color: #f0d070;
+}
+
+.primary-btn:disabled {
+    background-color: #444;
+    color: #888;
+    cursor: not-allowed;
+}
+
+.ghost-btn {
+    background: none;
+    border: 1px solid #555;
+    color: #ccc;
+}
+
+.ghost-btn:hover {
+    border-color: #888;
+}
+
+.error-text {
+    color: #ef5350;
+    font-size: 13px;
+    min-height: 16px;
+    margin: 0;
+    text-align: center;
+}
+
+.canvas-wrap {
+    width: 100%;
+    overflow-x: auto;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#ticket-canvas {
+    width: 100%;
+    max-width: 700px;
+    height: auto;
+    border-radius: 4px;
+}
+
+.result-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
