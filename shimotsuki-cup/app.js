@@ -56,6 +56,16 @@ function validateForm() {
     return null;
 }
 
+// Resolves to null when the image is missing, so the ticket can still be drawn.
+function loadLogo() {
+    return new Promise((resolve) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => resolve(null);
+        image.src = 'logo.png';
+    });
+}
+
 async function fetchEncryptedPlayers() {
     const res = await fetch('players.enc.json');
     encryptedPayload = await res.json();
@@ -116,18 +126,21 @@ submitBtn.addEventListener('click', async () => {
     });
 
     const fontSampleText = tournamentData.players.map((p) => p.name).join('') +
-        '4連単の予想１点（）開催日：日穴オープン戦' +
+        '4連単の予想１点（）開催日主催：' +
         tournamentData.tournament +
+        tournamentData.subtitle +
         tournamentData.date +
-        (tournamentData.venue || '') +
+        tournamentData.organizer +
         userName;
-    await loadTicketFonts(fontSampleText);
+    const [logo] = await Promise.all([loadLogo(), loadTicketFonts(fontSampleText)]);
     drawTicket(ticketCanvas, {
         userName,
         date: tournamentData.date,
         tournament: tournamentData.tournament,
+        subtitle: tournamentData.subtitle,
+        organizer: tournamentData.organizer,
         ranked,
-        venue: tournamentData.venue,
+        logo,
     });
 
     showScreen('result');

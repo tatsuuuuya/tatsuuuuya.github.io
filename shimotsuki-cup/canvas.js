@@ -51,7 +51,7 @@ function drawVerticalText(ctx, text, centerX, centerY, fontSize, fontFamily, wei
     ctx.restore();
 }
 
-function drawTicket(canvas, { userName, date, tournament, ranked, venue, logo }) {
+function drawTicket(canvas, { userName, date, tournament, subtitle, organizer, ranked, logo }) {
     canvas.width = TICKET_WIDTH;
     canvas.height = TICKET_HEIGHT;
     const ctx = canvas.getContext('2d');
@@ -110,41 +110,25 @@ function drawTicket(canvas, { userName, date, tournament, ranked, venue, logo })
     ctx.font = `900 ${tournFontSize}px "Noto Sans JP"`;
     ctx.fillText(tournLabel, leftX + leftW / 2, cy0 + boxH / 2 + 2);
 
-    // Sub-title (e.g. 霜月杯日穴オープン戦)
-    const subTitleY = cy0 + boxH + ch * 0.01;
+    // Info lines (left-aligned, same font size)
     const infoH = ch * 0.045;
-    const subTitle = tournament + '日穴オープン戦';
+    const infoGap = ch * 0.005;
+    const infoLines = [subtitle, `開催日：${date}`, `主催：${organizer}`];
+    const longestInfoLine = infoLines.reduce((a, b) => (b.length > a.length ? b : a));
+    const infoFontSize = fitHorizontalFontSize(
+        ctx, longestInfoLine, leftW * 0.95, infoH * 0.9, 'Noto Sans JP', 700, 32, 14
+    );
+    const infoY = cy0 + boxH + ch * 0.01;
     ctx.fillStyle = COLOR_INK;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    const subTitleFontSize = fitHorizontalFontSize(
-        ctx, subTitle, leftW * 0.95, infoH * 0.9, 'Noto Sans JP', 700, 32, 14
-    );
-    ctx.font = `700 ${subTitleFontSize}px "Noto Sans JP"`;
-    ctx.fillText(subTitle, leftX + 4, subTitleY + infoH / 2);
-
-    // Date (left-aligned, with "開催日：" prefix)
-    const dateY = subTitleY + infoH + ch * 0.004;
-    const dateLabel = '開催日：' + date;
-    const dateFontSize = fitHorizontalFontSize(
-        ctx, dateLabel, leftW * 0.95, infoH * 0.9, 'Noto Sans JP', 700, 32, 14
-    );
-    ctx.font = `700 ${dateFontSize}px "Noto Sans JP"`;
-    ctx.fillText(dateLabel, leftX + 4, dateY + infoH / 2);
-
-    // Venue / organizer (left-aligned, black text)
-    const venueY = dateY + infoH + ch * 0.006;
-    const venueText = venue || '';
-    if (venueText) {
-        const venueFontSize = fitHorizontalFontSize(
-            ctx, venueText, leftW * 0.95, infoH * 0.9, 'Noto Sans JP', 700, 32, 14
-        );
-        ctx.font = `700 ${venueFontSize}px "Noto Sans JP"`;
-        ctx.fillText(venueText, leftX + 4, venueY + infoH / 2);
-    }
+    ctx.font = `700 ${infoFontSize}px "Noto Sans JP"`;
+    infoLines.forEach((line, i) => {
+        ctx.fillText(line, leftX + 4, infoY + i * (infoH + infoGap) + infoH / 2);
+    });
 
     // Logo image (square, centered in remaining space)
-    const logoStartY = venueY + infoH + ch * 0.025;
+    const logoStartY = infoY + infoLines.length * (infoH + infoGap) + ch * 0.02;
     const logoMaxH = cy1 - logoStartY;
     const logoSize = Math.min(leftW, logoMaxH);
     if (logo) {
