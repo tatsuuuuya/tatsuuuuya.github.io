@@ -116,8 +116,10 @@ submitBtn.addEventListener('click', async () => {
     });
 
     const fontSampleText = tournamentData.players.map((p) => p.name).join('') +
-        'フォーメーション4連単ユーザー名位の予想点' +
+        '4連単の予想１点（）開催日：日穴オープン戦' +
+        tournamentData.tournament +
         tournamentData.date +
+        (tournamentData.venue || '') +
         userName;
     await loadTicketFonts(fontSampleText);
     drawTicket(ticketCanvas, {
@@ -125,6 +127,7 @@ submitBtn.addEventListener('click', async () => {
         date: tournamentData.date,
         tournament: tournamentData.tournament,
         ranked,
+        venue: tournamentData.venue,
     });
 
     showScreen('result');

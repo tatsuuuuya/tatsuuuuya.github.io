@@ -6,6 +6,7 @@ const COLOR_INK = '#141414';
 
 async function loadTicketFonts(sampleText) {
     await Promise.all([
+        document.fonts.load('700 48px "Noto Sans JP"', sampleText),
         document.fonts.load('900 48px "Noto Sans JP"', sampleText),
         document.fonts.load('900 48px "Noto Serif JP"', sampleText),
     ]);
@@ -50,26 +51,16 @@ function drawVerticalText(ctx, text, centerX, centerY, fontSize, fontFamily, wei
     ctx.restore();
 }
 
-function drawArrow(ctx, centerX, centerY, size) {
-    ctx.save();
-    ctx.fillStyle = COLOR_INK;
-    ctx.beginPath();
-    ctx.moveTo(centerX - size / 2, centerY - size * 0.6);
-    ctx.lineTo(centerX + size / 2, centerY);
-    ctx.lineTo(centerX - size / 2, centerY + size * 0.6);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-}
-
-function drawTicket(canvas, { userName, date, tournament, ranked }) {
+function drawTicket(canvas, { userName, date, tournament, ranked, venue, logo }) {
     canvas.width = TICKET_WIDTH;
     canvas.height = TICKET_HEIGHT;
     const ctx = canvas.getContext('2d');
 
+    // Background
     ctx.fillStyle = COLOR_BG;
     ctx.fillRect(0, 0, TICKET_WIDTH, TICKET_HEIGHT);
 
+    // Double border
     const OUTER_PAD = 16;
     ctx.strokeStyle = COLOR_INK;
     ctx.lineWidth = 5;
@@ -78,133 +69,176 @@ function drawTicket(canvas, { userName, date, tournament, ranked }) {
     ctx.lineWidth = 3;
     ctx.strokeRect(INNER_PAD, INNER_PAD, TICKET_WIDTH - INNER_PAD * 2, TICKET_HEIGHT - INNER_PAD * 2);
 
-    const contentX0 = INNER_PAD + 18;
-    const contentY0 = INNER_PAD + 18;
-    const contentX1 = TICKET_WIDTH - INNER_PAD - 18;
-    const contentY1 = TICKET_HEIGHT - INNER_PAD - 18;
-    const contentW = contentX1 - contentX0;
-    const contentH = contentY1 - contentY0;
+    // Content area
+    const cx0 = INNER_PAD + 18;
+    const cy0 = INNER_PAD + 18;
+    const cx1 = TICKET_WIDTH - INNER_PAD - 18;
+    const cy1 = TICKET_HEIGHT - INNER_PAD - 18;
+    const cw = cx1 - cx0;
+    const ch = cy1 - cy0;
 
-    const leftW = contentW * 0.225;
-    const leftX0 = contentX0;
-    const leftX1 = leftX0 + leftW;
+    // === 3-column layout ===
+    const colGap = cw * 0.03;
+    const leftW = cw * 0.38;
+    const midW = cw * 0.126;
+    const rightW = cw - leftW - midW - colGap * 2;
 
-    const rightX0 = leftX1 + contentW * 0.035;
-    const rightX1 = contentX1;
-    const rightW = rightX1 - rightX0;
+    const leftX = cx0;
+    const midX = leftX + leftW + colGap;
+    const rightX = midX + midW + colGap;
 
-    const titleBoxH = contentH * 0.16;
+    // Vertical rhythm (right column defines the grid)
+    const boxFrac = 0.1745;
+    const gapFrac = 0.0396;
+    const boxH = ch * boxFrac;
+    const gapH = ch * gapFrac;
 
+    // ────────────────────────────
+    // LEFT COLUMN
+    // ────────────────────────────
+
+    // Tournament name (black filled box, white text, centered)
+    const tournLabel = tournament;
+    ctx.fillStyle = COLOR_INK;
+    ctx.fillRect(leftX, cy0, leftW, boxH);
+    ctx.fillStyle = '#FFFFFF';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    const titleFontSize = fitHorizontalFontSize(
-        ctx, 'フォーメーション', rightW * 0.94, titleBoxH * 0.78, 'Noto Sans JP', 900, 90, 20
+    const tournFontSize = fitHorizontalFontSize(
+        ctx, tournLabel, leftW * 0.85, boxH * 0.6, 'Noto Sans JP', 900, 80, 16
     );
+    ctx.font = `900 ${tournFontSize}px "Noto Sans JP"`;
+    ctx.fillText(tournLabel, leftX + leftW / 2, cy0 + boxH / 2 + 2);
 
-    let cursorY = contentY0;
-
+    // Sub-title (e.g. 霜月杯日穴オープン戦)
+    const subTitleY = cy0 + boxH + ch * 0.01;
+    const infoH = ch * 0.045;
+    const subTitle = tournament + '日穴オープン戦';
     ctx.fillStyle = COLOR_INK;
-    ctx.fillRect(leftX0, cursorY, leftW, titleBoxH);
-    ctx.fillStyle = '#FFFFFF';
-    const tournamentFontSize = fitHorizontalFontSize(
-        ctx, tournament, leftW * 0.86, titleBoxH * 0.78, 'Noto Sans JP', 900, titleFontSize, 16
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    const subTitleFontSize = fitHorizontalFontSize(
+        ctx, subTitle, leftW * 0.95, infoH * 0.9, 'Noto Sans JP', 700, 32, 14
     );
-    ctx.font = `900 ${tournamentFontSize}px "Noto Sans JP"`;
-    ctx.fillText(tournament, leftX0 + leftW / 2, cursorY + titleBoxH / 2 + 2);
-    cursorY += titleBoxH + contentH * 0.02;
+    ctx.font = `700 ${subTitleFontSize}px "Noto Sans JP"`;
+    ctx.fillText(subTitle, leftX + 4, subTitleY + infoH / 2);
 
-    const dateH = contentH * 0.1;
-    ctx.fillStyle = COLOR_INK;
-    ctx.fillRect(leftX0, cursorY, leftW, dateH);
-    ctx.fillStyle = '#FFFFFF';
+    // Date (left-aligned, with "開催日：" prefix)
+    const dateY = subTitleY + infoH + ch * 0.004;
+    const dateLabel = '開催日：' + date;
     const dateFontSize = fitHorizontalFontSize(
-        ctx, date, leftW * 0.82, dateH * 0.8, 'Noto Sans JP', 900, 100, 16
+        ctx, dateLabel, leftW * 0.95, infoH * 0.9, 'Noto Sans JP', 700, 32, 14
     );
-    ctx.font = `900 ${dateFontSize}px "Noto Sans JP"`;
-    ctx.fillText(date, leftX0 + leftW / 2, cursorY + dateH / 2 + 2);
-    cursorY += dateH + contentH * 0.03;
+    ctx.font = `700 ${dateFontSize}px "Noto Sans JP"`;
+    ctx.fillText(dateLabel, leftX + 4, dateY + infoH / 2);
 
-    const footerH = contentH * 0.12;
-    const verticalTextH = contentY1 - footerH - cursorY;
+    // Venue / organizer (left-aligned, black text)
+    const venueY = dateY + infoH + ch * 0.006;
+    const venueText = venue || '';
+    if (venueText) {
+        const venueFontSize = fitHorizontalFontSize(
+            ctx, venueText, leftW * 0.95, infoH * 0.9, 'Noto Sans JP', 700, 32, 14
+        );
+        ctx.font = `700 ${venueFontSize}px "Noto Sans JP"`;
+        ctx.fillText(venueText, leftX + 4, venueY + infoH / 2);
+    }
+
+    // Logo image (square, centered in remaining space)
+    const logoStartY = venueY + infoH + ch * 0.025;
+    const logoMaxH = cy1 - logoStartY;
+    const logoSize = Math.min(leftW, logoMaxH);
+    if (logo) {
+        const lx = leftX + (leftW - logoSize) / 2;
+        const ly = logoStartY + (logoMaxH - logoSize) / 2;
+        ctx.drawImage(logo, lx, ly, logoSize, logoSize);
+    }
+
+    // ────────────────────────────
+    // MIDDLE COLUMN (4連単)
+    // ────────────────────────────
+
+    // Spans from top to bottom of rank box 4
+    const midTop = cy0;
+    const midBottom = cy0 + 3 * (boxH + gapH) + boxH;
+    const midH = midBottom - midTop;
+    const capH = midH * 0.088;
+
+    // Column border
+    ctx.strokeStyle = COLOR_INK;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(midX, midTop, midW, midH);
+
+    // Top cap (black fill)
+    ctx.fillStyle = COLOR_INK;
+    ctx.fillRect(midX, midTop, midW, capH);
+
+    // Bottom cap (black fill)
+    ctx.fillStyle = COLOR_INK;
+    ctx.fillRect(midX, midBottom - capH, midW, capH);
+
+    // Bet-type vertical text between caps
     const betTypeText = tournament === '霜月杯' ? '4連単' : tournament;
-    const betTypeFontSize = fitVerticalFontSize(
-        ctx, betTypeText, verticalTextH * 0.94, leftW * 0.82, 'Noto Sans JP', 900, 160, 30
+    const btFontSize = fitVerticalFontSize(
+        ctx, betTypeText,
+        (midH - capH * 2) * 0.8, midW * 0.72,
+        'Noto Sans JP', 900, 100, 20
     );
     drawVerticalText(
-        ctx,
-        betTypeText,
-        leftX0 + leftW / 2,
-        cursorY + verticalTextH / 2,
-        betTypeFontSize,
-        'Noto Sans JP',
-        900,
-        COLOR_INK
+        ctx, betTypeText,
+        midX + midW / 2, midTop + midH / 2,
+        btFontSize, 'Noto Sans JP', 900, COLOR_INK
     );
-    cursorY += verticalTextH;
 
-    ctx.fillStyle = COLOR_INK;
-    ctx.fillRect(leftX0, cursorY, leftW, footerH);
+    // ────────────────────────────
+    // RIGHT COLUMN (rank boxes)
+    // ────────────────────────────
 
-    ctx.strokeStyle = COLOR_INK;
-    ctx.lineWidth = 3;
-    ctx.strokeRect(rightX0, contentY0, rightW, titleBoxH);
-    ctx.fillStyle = COLOR_INK;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = `900 ${titleFontSize}px "Noto Sans JP"`;
-    ctx.fillText('フォーメーション', rightX0 + rightW / 2, contentY0 + titleBoxH / 2 + 2);
-
-    const labelsY = contentY0 + titleBoxH + contentH * 0.05;
-    const labelsH = contentH * 0.05;
-
-    const boxesY0 = labelsY + labelsH + contentH * 0.01;
-    const boxesH = contentH * 0.5;
-
-    const ARROW_GAP_FRAC = 0.06;
-    const boxWidthFrac = (1 - ARROW_GAP_FRAC * 3) / 4;
-    const boxW = rightW * boxWidthFrac;
-    const arrowGapW = rightW * ARROW_GAP_FRAC;
-
-    const rankLabels = ['1位', '2位', '3位', '4位'];
     for (let i = 0; i < 4; i++) {
-        const boxX0 = rightX0 + i * (boxW + arrowGapW);
+        const boxY = cy0 + i * (boxH + gapH);
 
-        ctx.fillStyle = COLOR_INK;
-        ctx.font = `700 ${labelsH * 0.85}px "Noto Sans JP"`;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'alphabetic';
-        ctx.fillText(rankLabels[i], boxX0, labelsY + labelsH);
-
+        // Box border
         ctx.strokeStyle = COLOR_INK;
         ctx.lineWidth = 2;
-        ctx.strokeRect(boxX0, boxesY0, boxW, boxesH);
+        ctx.strokeRect(rightX, boxY, rightW, boxH);
 
+        // Name (horizontal, centered)
         const name = ranked[i] || '';
-        const fontSize = fitVerticalFontSize(ctx, name, boxesH * 0.94, boxW * 0.9, 'Noto Serif JP', 900, 90, 16);
-        drawVerticalText(
-            ctx,
-            name,
-            boxX0 + boxW / 2,
-            boxesY0 + boxesH / 2,
-            fontSize,
-            'Noto Serif JP',
-            900,
-            COLOR_INK
+        const fontSize = fitHorizontalFontSize(
+            ctx, name, rightW * 0.8, boxH * 0.55,
+            'Noto Serif JP', 900, 70, 16
         );
+        ctx.fillStyle = COLOR_INK;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `900 ${fontSize}px "Noto Serif JP"`;
+        ctx.fillText(name, rightX + rightW / 2, boxY + boxH / 2);
 
+        // Down-pointing triangle arrow between boxes
         if (i < 3) {
-            drawArrow(ctx, boxX0 + boxW + arrowGapW / 2, boxesY0 + boxesH / 2, Math.min(arrowGapW * 0.7, boxesH * 0.08));
+            const arrowCY = boxY + boxH + gapH / 2;
+            const triW = rightW * 0.07;
+            const triH = gapH * 0.38;
+            ctx.fillStyle = COLOR_INK;
+            ctx.beginPath();
+            ctx.moveTo(rightX + rightW / 2 - triW / 2, arrowCY - triH / 2);
+            ctx.lineTo(rightX + rightW / 2 + triW / 2, arrowCY - triH / 2);
+            ctx.lineTo(rightX + rightW / 2, arrowCY + triH / 2);
+            ctx.closePath();
+            ctx.fill();
         }
     }
 
-    ctx.fillStyle = COLOR_INK;
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'alphabetic';
-    const noteText = `（${userName}の予想1点）`;
+    // Note text (centered below boxes)
+    const noteY = cy0 + 4 * (boxH + gapH);
+    const noteH = cy1 - noteY;
+    const noteText = `（${userName}の予想１点）`;
     const noteFontSize = fitHorizontalFontSize(
-        ctx, noteText, rightW * 0.92, dateFontSize, 'Noto Sans JP', 700, 100, 16
+        ctx, noteText, rightW * 0.92, noteH * 0.45,
+        'Noto Sans JP', 700, 40, 14
     );
+    ctx.fillStyle = COLOR_INK;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     ctx.font = `700 ${noteFontSize}px "Noto Sans JP"`;
-    const noteY = boxesY0 + boxesH + noteFontSize * 1.15;
-    ctx.fillText(noteText, rightX1, noteY);
+    ctx.fillText(noteText, rightX + rightW / 2, noteY + noteH / 2);
 }
