@@ -62,7 +62,7 @@ function loadLogo() {
         const image = new Image();
         image.onload = () => resolve(image);
         image.onerror = () => resolve(null);
-        image.src = 'logo.jpg';
+        image.src = 'nichiana_logo_mono.png';
     });
 }
 
