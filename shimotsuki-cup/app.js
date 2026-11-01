@@ -13,7 +13,7 @@ const rankSelects = [1, 2, 3, 4].map((n) => document.getElementById(`rank-${n}`)
 const formError = document.getElementById('form-error');
 const submitBtn = document.getElementById('submit-btn');
 
-const ticketCanvas = document.getElementById('ticket-canvas');
+const ticketImage = document.getElementById('ticket-image');
 const downloadBtn = document.getElementById('download-btn');
 const retryBtn = document.getElementById('retry-btn');
 
@@ -62,7 +62,7 @@ function loadLogo() {
         const image = new Image();
         image.onload = () => resolve(image);
         image.onerror = () => resolve(null);
-        image.src = 'logo.png';
+        image.src = 'logo.jpg';
     });
 }
 
@@ -133,6 +133,7 @@ submitBtn.addEventListener('click', async () => {
         tournamentData.organizer +
         userName;
     const [logo] = await Promise.all([loadLogo(), loadTicketFonts(fontSampleText)]);
+    const ticketCanvas = document.createElement('canvas');
     drawTicket(ticketCanvas, {
         userName,
         date: tournamentData.date,
@@ -142,6 +143,8 @@ submitBtn.addEventListener('click', async () => {
         ranked,
         logo,
     });
+    // A data URL, not a blob URL: long-press save is more reliable across mobile browsers.
+    ticketImage.src = ticketCanvas.toDataURL('image/png');
 
     showScreen('result');
 });
@@ -149,7 +152,7 @@ submitBtn.addEventListener('click', async () => {
 downloadBtn.addEventListener('click', () => {
     const link = document.createElement('a');
     link.download = `${predictorNameInput.value.trim() || 'shimotsuki-cup'}_予想.png`;
-    link.href = ticketCanvas.toDataURL('image/png');
+    link.href = ticketImage.src;
     link.click();
 });
 

@@ -134,7 +134,11 @@ function drawTicket(canvas, { userName, date, tournament, subtitle, organizer, r
     if (logo) {
         const lx = leftX + (leftW - logoSize) / 2;
         const ly = logoStartY + (logoMaxH - logoSize) / 2;
+        // The logo has an opaque white background; multiply blends it into the ticket color.
+        ctx.save();
+        ctx.globalCompositeOperation = 'multiply';
         ctx.drawImage(logo, lx, ly, logoSize, logoSize);
+        ctx.restore();
     }
 
     // ────────────────────────────
