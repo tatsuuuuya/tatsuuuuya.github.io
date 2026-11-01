@@ -35,7 +35,7 @@ jobs:
           cp index.html _site/
           cp -r castle-practice/dist/. _site/castle-practice/
           cp coordinate-practice/index.html _site/coordinate-practice/
-          cp shimotsuki-cup/*.html shimotsuki-cup/*.css shimotsuki-cup/*.js shimotsuki-cup/*.json _site/shimotsuki-cup/
+          cp shimotsuki-cup/*.html shimotsuki-cup/*.css shimotsuki-cup/*.js shimotsuki-cup/*.json shimotsuki-cup/*.png _site/shimotsuki-cup/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
