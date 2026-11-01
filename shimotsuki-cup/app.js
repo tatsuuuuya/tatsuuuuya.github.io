@@ -67,7 +67,7 @@ function loadLogo() {
 }
 
 async function fetchEncryptedPlayers() {
-    const res = await fetch('players.enc.json');
+    const res = await fetch('players.enc.json', { cache: 'no-cache' });
     encryptedPayload = await res.json();
 }
 
