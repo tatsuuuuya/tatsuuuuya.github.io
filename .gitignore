@@ -1,1 +1,26 @@
+# Claude Code (personal)
 CLAUDE.local.md
+.claude/settings.local.json
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Credentials / keys
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+id_rsa*
+id_ed25519*
+credentials*.json
+service-account*.json
+*secret*.json
+.npmrc
+.netrc
+
+# OS / editor
+.DS_Store
+Thumbs.db
